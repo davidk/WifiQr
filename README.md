@@ -39,7 +39,7 @@ Download a built binary from the releases tab.
 This requires a complete Rust toolchain. [Link to installation instructions](https://www.rust-lang.org/tools/install).
 
 ```bash
-	cargo build --release
+cargo build --release
 ```
 
 ### Information on QR codes as used in WI-FI authentication

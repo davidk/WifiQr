@@ -37,8 +37,8 @@ mod tests {
     #[test]
     fn test_credentials() {
         assert_eq!(
-            Credentials::new(Some("test"), Some("password"), Some("wpa2"), false).format().unwrap(),
-            "WIFI:T:wpa2;S:test;P:password;;"
+            Credentials::new(Some("test"), Some("password"), Some("WPA2"), false).format().unwrap(),
+            "WIFI:T:WPA2;S:test;P:password;;"
         );
     }
 
@@ -50,7 +50,7 @@ mod tests {
                              Some("randompassword"), 
                              Some("wpa2"), 
                              false).format().unwrap(),
-            r###"WIFI:T:wpa2;S:\"foo\;bar\\baz\";P:randompassword;;"###
+            r###"WIFI:T:WPA2;S:\"foo\;bar\\baz\";P:randompassword;;"###
         );
     }
 
@@ -76,8 +76,8 @@ mod tests {
     fn test_hidden_ssid() {
         assert_eq!(Credentials::new(Some(r###""foo;bar\baz""###), 
                                     Some("randompassword"), 
-                                    Some("wpa2"), true).format().unwrap(),
-            r###"WIFI:T:wpa2;S:\"foo\;bar\\baz\";P:randompassword;H:true;;"###);
+                                    Some("WPA2"), true).format().unwrap(),
+            r###"WIFI:T:WPA2;S:\"foo\;bar\\baz\";P:randompassword;H:true;;"###);
     }
 
     // If a ssid isn't hidden, it shouldn't be set in the formatted string
@@ -85,8 +85,8 @@ mod tests {
     fn test_normal_ssid() {
         assert_eq!(Credentials::new(Some(r###""foo;bar\baz""###), 
                                     Some("randompassword"), 
-                                    Some("wpa2"), false).format().unwrap(),
-            r###"WIFI:T:wpa2;S:\"foo\;bar\\baz\";P:randompassword;;"###);
+                                    Some("WPA2"), false).format().unwrap(),
+            r###"WIFI:T:WPA2;S:\"foo\;bar\\baz\";P:randompassword;;"###);
     }
 
     // requier a password when wpa/wpa2 is requested
@@ -126,7 +126,7 @@ mod tests {
         // wep
         assert_eq!(
             Credentials::new(Some("test"), Some("password"), Some("wep"), false).format().unwrap(),
-            "WIFI:T:wep;S:test;P:password;;"
+            "WIFI:T:WEP;S:test;P:password;;"
         );
 
         // wpa
@@ -135,16 +135,23 @@ mod tests {
             "WIFI:T:WPA;S:test;P:password;;"
         );
 
-        // wpa2
+        // wpa2 -- note that the wifi string has WPA2 in caps. it seems that iOS devices are sensitive
+        // to the T: parameter being lowercase (and will return 'no usable data found')
         assert_eq!(
             Credentials::new(Some("test"), Some("password"), Some("wpa2"), false).format().unwrap(),
-            "WIFI:T:wpa2;S:test;P:password;;"
+            "WIFI:T:WPA2;S:test;P:password;;"
         );
 
         // wpa3
         assert_eq!(
             Credentials::new(Some("test"), Some("password"), Some("wpa3"), false).format().unwrap(),
-            "WIFI:T:wpa3;S:test;P:password;;"
+            "WIFI:T:WPA3;S:test;P:password;;"
+        );
+
+        // nopass -- unlike wpa2/wpa3, etc, nopass is accepted by iOS devices uncapitalized
+        assert_eq!(
+            Credentials::new(Some("test"), Some(""), Some("nopass"), false).format().unwrap(),
+            "WIFI:T:nopass;S:test;;"
         );
     }
 
@@ -161,11 +168,9 @@ mod tests {
     fn test_encr_nopass_with_empty_password() {
         assert_eq!(
             Credentials::new(Some("test"), Some(""), Some("nopass"), false).format().unwrap(),
-            "WIFI:T:nopass;S:test;P:;;"
+            "WIFI:T:nopass;S:test;;"
         );
     }
-
-
 }
 
 pub mod code {
@@ -210,6 +215,13 @@ pub mod code {
                 .replace(r#"""#, r#"\""#)
                 .replace(r#";"#, r#"\;"#)
                 .replace(r#":"#, r#"\:"#);
+        }
+
+        fn filter_encr(&self, field: &str) -> String {
+            if field != "nopass" && !self.encr.is_empty() {
+                return field.to_string().to_uppercase();
+            }
+            return field.to_string();
         }
        
         // Call the wifi_auth! macro to generate a qr-string and/or return any errors that 
@@ -257,7 +269,7 @@ pub mod code {
             if self.hidden {
                 return Ok(format!(
                     wifi_auth!(hidden),
-                    self.filter_credentials(&self.encr),
+                    self.filter_credentials(&self.filter_encr(&self.encr)),
                     self.filter_credentials(&self.ssid),
                     self.filter_credentials(&self.pass),
                     &self.hidden,
@@ -265,7 +277,7 @@ pub mod code {
             } else {
                 return Ok(format!(
                     wifi_auth!(),
-                    self.filter_credentials(&self.encr),
+                    self.filter_credentials(&self.filter_encr(&self.encr)),
                     self.filter_credentials(&self.ssid),
                     self.filter_credentials(&self.pass)
                 ))

@@ -1,12 +1,15 @@
 // wifiqr
-// things that this crate does not currently support:
-// * hexadecimal input for the wifi password
-// * direct to console output (give the program your password, etc and pop out a QR code for your
+// A crate to transform Wifi credentials into a scannable QR code
+//
+// Limitations:
+// * Hexadecimal input for the wifi password
+// * Direct to console output (give the program your password, etc and pop out a QR code for your
 // friends to scan on a console)
+//
 extern crate image;
 extern crate qrcodegen;
 
-// * HEX `S` / `P` : its possible that these could be interpreted as hex if ascii. add quotes unles
+// * HEX `S` / `P` : its possible that these could be interpreted as hex if ascii. Add quotes
 // unless an option is set to ignore it
 macro_rules! wifi_auth {
     // Derived from:

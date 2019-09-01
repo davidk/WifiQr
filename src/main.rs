@@ -7,7 +7,7 @@ use clap::{App, Arg, ArgGroup};
 
 fn main() {
     let options = App::new("WifiQR")
-        .version("0.01")
+        .version("0.02")
         .about("Encode your wi-fi credentials as a scannable QR code")
         .author("davidk")
         .usage("wifiqr --ssid (ssid) [ --password (password) | --ask ] --encr [ encryption type (default:wpa2) ] [ --imagefile (output_name.png) | --svg | --svgfile (output_name.svg) ]")

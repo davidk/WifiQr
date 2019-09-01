@@ -8,7 +8,7 @@ To use WifiQr's command-line implementation, download a pre-built binary from th
 
 ### Crate
 
-The crate is not currently available on crates.io, but can be downloaded from this repository. Please be sure to pin the version you're using is tied to a specific commit, to avoid backwards incompatible changes (this is not anticipated, but it may happen).
+The crate is not currently available on crates.io, but can be downloaded from this repository. Please be sure to pin the version you're using to a specific commit/release, to avoid backwards incompatible changes (this is not anticipated, but it may happen).
 
 ### Usage
 

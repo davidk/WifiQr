@@ -79,17 +79,23 @@ fn main() {
                 .display_order(9)
                 .help("Save the QR code to a file (SVG formatted)")
         )
+        .arg(
+            Arg::with_name("console")
+                .long("console")
+                .display_order(10)
+                .help("Print the QR code out to the console")
+        )
         .group(
             ArgGroup::with_name("output types")
                 .required(true)
-                .args(&["image_file","svg","svg_file"])
+                .args(&["image_file","svg","svg_file","console"])
         )
         .arg(
             Arg::with_name("debug")
                 .long("debug")
                 .short("d")
                 .takes_value(false)
-                .display_order(10)
+                .display_order(11)
                 .help("Display some extra debugging output")
         )
         .arg(
@@ -97,7 +103,7 @@ fn main() {
                 .long("ask")
                 .short("a")
                 .takes_value(false)
-                .display_order(11)
+                .display_order(12)
                 .help("Ask for password instead of getting it through the command-line")
         )
         .get_matches();
@@ -126,6 +132,8 @@ fn main() {
                 password, 
                 options.value_of("encryption").unwrap(),
                 options.is_present("hidden"));
+
+        println!("{:?}", config.format().unwrap());
     }
 
     let encoding = wifiqr::code::encode(&config).expect("There was a problem generating the QR code");
@@ -161,6 +169,10 @@ fn main() {
 
         println!("{}", wifiqr::code::make_svg(&encoding));
 
+    } else if options.is_present("console") {
+
+        wifiqr::code::console_qr(&encoding);
+    
     } else {
 
         println!("Please select an output format. For available formats, re-run with --help");

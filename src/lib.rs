@@ -20,8 +20,8 @@ macro_rules! wifi_auth {
     // P: wifi password. Can be ommitted if T is 'nopass'
     // H: Hidden SSID. Optional.
     (hidden) => ("WIFI:T:{};S:{};P:{};H:{};;");
-    (nopass) => ("WIFI:S:{};;");
-    (nopass_hidden) => ("WIFI:S:{};H:{};;");
+    (nopass) => ("WIFI:T:nopass;S:{};;");
+    (nopass_hidden) => ("WIFI:T:nopass;S:{};H:{};;");
     () => {
         "WIFI:T:{};S:{};P:{};;";
     };
@@ -224,31 +224,33 @@ pub mod code {
             // unrecoverable errors:
             // * ssid has no password, but sets a T type
             // * sets a password, but sets T type to nopass
-            if self.pass.is_empty() {
+
+            if self.encr == "nopass" || self.encr.is_empty() {
+                if !self.pass.is_empty() {
+                    return Err("With nopass as the encryption type (or unset encryption type), the password field should be empty. 
+                        (Encryption should probably be set to something like wpa2)")
+                }
+            }
+    
+            if self.pass.is_empty() || self.pass == "" {
                 // Error condition: Password is empty, and the T (encr) type is not "nopass" / not empty
                 if self.encr != "nopass" && !self.encr.is_empty() {
                     return Err("The encryption method requested requires a password.")
                 }
 
-                if self.hidden {
-                    return Ok(format!(
-                        wifi_auth!(nopass_hidden),
-                        self.filter_credentials(&self.ssid),
-                        &self.hidden,
-                    ));
-                }
-
-                if self.encr.is_empty() {
-                    return Ok(format!(
-                        wifi_auth!(nopass),
-                        self.filter_credentials(&self.ssid),
-                    ))
-                } 
-            }
-
-            if self.encr == "nopass" || self.encr.is_empty() {
-                if !self.pass.is_empty() {
-                    return Err("With nopass as the encryption type (or unset encryption type), the password field should be empty. (Encryption should probably be set to something like wpa2)")
+                if (self.encr.is_empty() || self.encr == "nopass") {
+                    if self.hidden {
+                        return Ok(format!(
+                            wifi_auth!(nopass_hidden),
+                            self.filter_credentials(&self.ssid),
+                            &self.hidden,
+                        ));
+                    } else if self.pass == "" {
+                        return Ok(format!(
+                            wifi_auth!(nopass),
+                            self.filter_credentials(&self.ssid),
+                        ));
+                    } 
                 }
             }
 
@@ -309,6 +311,18 @@ pub mod code {
 
     pub fn make_svg(qrcode: &QrCode) -> String {
         return qrcode.to_svg_string(4);
+    }
+
+    // console_qr
+    // generate a wifi qr code that can be output to the console for quick scanning
+    // parameters:
+    // qrcode: encoded qrcode
+    // scale: scaling factor
+    // border_size: How large to make the quiet zone
+    // return:
+    // this returns a block of text that can be printed directly to the console
+    pub fn console_qr(qrcode: &QrCode, scale: i32, border_size: u32) {
+        
     }
 
     // make_image

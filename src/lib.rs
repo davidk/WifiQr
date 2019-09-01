@@ -328,13 +328,23 @@ pub mod code {
     // console_qr
     // generate a wifi qr code that can be output to the console for quick scanning
     // parameters:
-    // qrcode: encoded qrcode
-    // scale: scaling factor
-    // border_size: How large to make the quiet zone
+    // - qrcode: encoded qrcode
     // return:
-    // this returns a block of text that can be printed directly to the console
-    pub fn console_qr(qrcode: &QrCode, scale: i32, border_size: u32) {
-        
+    // - this prints a block of text directly to the console
+    pub fn console_qr(qrcode: &QrCode) {
+        const ASCII_BL_BLOCK: &str = "  ";
+        const ASCII_W_BLOCK: &str = "██";
+
+        for y in 0..qrcode.size() {
+            for x in 0..qrcode.size() {
+                if qrcode.get_module(x, y) {
+                    print!("{}", ASCII_W_BLOCK);
+                } else {
+                    print!("{}", ASCII_BL_BLOCK);
+                }
+            }
+            println!();
+        }
     }
 
     // make_image

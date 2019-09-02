@@ -1,11 +1,10 @@
 // wifiqr
 // A crate to transform Wifi credentials into a scannable QR code
 //
-// Limitations:
-// * Hexadecimal input for the wifi password
-// * Direct to console output (give the program your password, etc and pop out a QR code for your
-// friends to scan on a console)
-//
+// Current limitations:
+// * Hexadecimal input for the wifi password is not supported
+// * Scaling the QR code for console output is not supported
+//   - Border / quiet zone have also not been implemented
 extern crate image;
 extern crate qrcodegen;
 
@@ -89,7 +88,7 @@ mod tests {
             r###"WIFI:T:WPA2;S:\"foo\;bar\\baz\";P:randompassword;;"###);
     }
 
-    // requier a password when wpa/wpa2 is requested
+    // Require a password when wpa/wpa2 is requested
     #[test]
     fn test_nopassword_with_wpa2() {
         assert!(Credentials::new(Some(r###""foo;bar\baz""###), 
@@ -103,7 +102,7 @@ mod tests {
                                     false).format().is_err(), "wpa2 requires a password");
     }
 
-    // require a password when using wep
+    // Require a password when using wep
     #[test]
     fn test_nopassword_with_wep() {
         assert!(Credentials::new(Some(r###""foo;bar\baz""###), 
@@ -216,7 +215,10 @@ pub mod code {
                 .replace(r#";"#, r#"\;"#)
                 .replace(r#":"#, r#"\:"#);
         }
-
+        
+        // the Encrption field in the Wifi QR code fails on iOS devices if it is
+        // not provided in an uppercase format. Android devices are case insensitive,
+        // so the encryption field is passed through as uppercase now.
         fn filter_encr(&self, field: &str) -> String {
             if field != "nopass" && !self.encr.is_empty() {
                 return field.to_string().to_uppercase();
@@ -250,7 +252,7 @@ pub mod code {
                     return Err("The encryption method requested requires a password.")
                 }
 
-                if (self.encr.is_empty() || self.encr == "nopass") {
+                if self.encr.is_empty() || self.encr == "nopass" {
                     if self.hidden {
                         return Ok(format!(
                             wifi_auth!(nopass_hidden),
@@ -392,7 +394,7 @@ pub mod code {
     }
 
     // save_image
-    // image: ImageBuffer
+    // image: ImageBuffer<>
     // save_file: file to save the image into
     pub fn save_image(image: &ImageBuffer<LumaA<u8>, Vec<u8>>, save_file: String) {
         let _ = image.save(save_file).unwrap();

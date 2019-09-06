@@ -333,11 +333,27 @@ pub mod code {
     // - qrcode: encoded qrcode
     // return:
     // - this prints a block of text directly to the console
-    pub fn console_qr(qrcode: &QrCode) {
+    pub fn console_qr(qrcode: &QrCode, quiet_zone: i32) {
         const ASCII_BL_BLOCK: &str = "  ";
         const ASCII_W_BLOCK: &str = "██";
 
+        let x_zone = quiet_zone;
+        let y_zone = quiet_zone;
+
+        // paint top border -- y axis
+        for _top_border in 0..y_zone {
+            print!("{}", ASCII_BL_BLOCK);
+            println!();
+        }
+
         for y in 0..qrcode.size() {
+
+            // paint left border -- x axis
+            for _left_border in 0..x_zone {
+                print!("{}", ASCII_BL_BLOCK);
+            }
+
+            // paint qr
             for x in 0..qrcode.size() {
                 if qrcode.get_module(x, y) {
                     print!("{}", ASCII_W_BLOCK);
@@ -345,6 +361,18 @@ pub mod code {
                     print!("{}", ASCII_BL_BLOCK);
                 }
             }
+
+            // paint right border -- x axis
+            for _right_border in 0..x_zone {
+                print!("{}", ASCII_BL_BLOCK);
+            }
+
+            println!();
+        }
+
+        // paint bottom border -- y axis
+        for _bottom_border in 0..y_zone {
+            print!("{}", ASCII_BL_BLOCK);
             println!();
         }
     }

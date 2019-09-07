@@ -174,6 +174,8 @@ mod tests {
 
 pub mod code {
 
+    use std::convert::TryInto;
+
     use image::{ImageBuffer, LumaA};
     use qrcodegen::{DataTooLong, Mask, QrCode, QrCodeEcc, QrSegment};
 
@@ -383,13 +385,13 @@ pub mod code {
     // border_size: How large to make the quiet zone
     // This returns an ImageBuffer<> that can be saved using save_image(), or passed on
     // for further manipulation by the caller
-    pub fn make_image(qrcode: &QrCode, scale: i32, border_size: u32) -> ImageBuffer<LumaA<u8>, Vec<u8>> {
-        let new_qr_size = qrcode.size() as i32 * scale;
+    pub fn make_image(qrcode: &QrCode, scale: i32, border_size: i32) -> ImageBuffer<LumaA<u8>, Vec<u8>> {
+        let new_qr_size = qrcode.size() * scale;
 
         // --- Initialize to a white canvas with the alpha layer pre-set ---
         let mut image = ImageBuffer::from_pixel(
-            new_qr_size as u32 + border_size * 2,
-            new_qr_size as u32 + border_size * 2,
+            (new_qr_size + border_size * 2).try_into().unwrap(),
+            (new_qr_size + border_size * 2).try_into().unwrap(),
             LumaA([255, 255]),
         );
 

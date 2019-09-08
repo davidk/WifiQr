@@ -121,6 +121,7 @@ fn main() {
         print!("Enter password for network `{}` (will echo to screen): ", options.value_of("ssid").unwrap());
         io::stdout().flush().unwrap();
         io::stdin().read_line(&mut password).expect("Failed to read password");
+        password = password.trim().to_string();
     } else {
         password = options.value_of("password").unwrap().to_string();
     }

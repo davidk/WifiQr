@@ -133,7 +133,7 @@ fn main() {
                 options.value_of("encryption").unwrap(),
                 options.is_present("hidden"));
 
-        println!("{:?}", config.format().unwrap());
+        println!("Wifi string: {:?}", config.format().unwrap());
     }
 
     let encoding = wifiqr::code::encode(&config).expect("There was a problem generating the QR code");

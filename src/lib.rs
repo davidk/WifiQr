@@ -169,6 +169,15 @@ mod tests {
             "WIFI:T:nopass;S:test;;"
         );
     }
+
+    // when quote is set, ensure that the result is quoted
+    #[test]
+    fn test_quoted_ssid_password() {
+        assert_eq!(
+            Credentials::new(Some("test"), Some("password"), Some("wpa2"), false, true).format().unwrap(),
+            "WIFI:T:WPA2;S:\"test\";P:\"password\";;"
+        );
+    }
 }
 
 pub mod code {

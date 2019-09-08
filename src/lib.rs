@@ -216,7 +216,7 @@ pub mod code {
                 .replace(r#":"#, r#"\:"#);
         }
         
-        // the Encrption field in the Wifi QR code fails on iOS devices if it is
+        // the Encryption field in the Wifi QR code fails on iOS devices if it is
         // not provided in an uppercase format. Android devices are case insensitive,
         // so the encryption field is passed through as uppercase now.
         fn filter_encr(&self, field: &str) -> String {
@@ -331,7 +331,8 @@ pub mod code {
     // generate a wifi qr code that can be output to the console for quick scanning
     // parameters:
     // - qrcode: encoded qrcode
-    // return:
+    // - quiet_zone: the border size to apply to the QR code (created with ASCII_BL_BLOCK)
+    // result:
     // - this prints a block of text directly to the console
     pub fn console_qr(qrcode: &QrCode, quiet_zone: i32) {
         const ASCII_BL_BLOCK: &str = "  ";
@@ -347,7 +348,6 @@ pub mod code {
         }
 
         for y in 0..qrcode.size() {
-
             // paint left border -- x axis
             for _left_border in 0..x_zone {
                 print!("{}", ASCII_BL_BLOCK);

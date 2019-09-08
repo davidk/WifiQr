@@ -3,8 +3,6 @@
 //
 // Current limitations:
 // * Hexadecimal input for the wifi password is not supported
-// * Scaling the QR code for console output is not supported
-//   - Border / quiet zone have also not been implemented
 extern crate image;
 extern crate qrcodegen;
 

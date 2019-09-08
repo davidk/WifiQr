@@ -30,7 +30,7 @@ mod tests {
     #[test]
     fn test_credentials() {
         assert_eq!(
-            Credentials::new(Some("test"), Some("password"), Some("WPA2"), false).format().unwrap(),
+            Credentials::new(Some("test"), Some("password"), Some("WPA2"), false, false).format().unwrap(),
             "WIFI:T:WPA2;S:test;P:password;;"
         );
     }
@@ -42,7 +42,7 @@ mod tests {
             Credentials::new(Some(r###""foo;bar\baz""###), 
                              Some("randompassword"), 
                              Some("wpa2"), 
-                             false).format().unwrap(),
+                             false, false).format().unwrap(),
             r###"WIFI:T:WPA2;S:\"foo\;bar\\baz\";P:randompassword;;"###
         );
     }
@@ -50,7 +50,7 @@ mod tests {
     // Exercise the automatic qr encoder against the manual encoder
     #[test]
     fn test_qrcodes() {
-        let credentials = Credentials::new(Some("test"), Some("WPA"), Some("test"), false);
+        let credentials = Credentials::new(Some("test"), Some("WPA"), Some("test"), false, false);
 
         assert_eq!(
             make_svg(&encode(&credentials).unwrap()),
@@ -69,7 +69,7 @@ mod tests {
     fn test_hidden_ssid() {
         assert_eq!(Credentials::new(Some(r###""foo;bar\baz""###), 
                                     Some("randompassword"), 
-                                    Some("WPA2"), true).format().unwrap(),
+                                    Some("WPA2"), true, false).format().unwrap(),
             r###"WIFI:T:WPA2;S:\"foo\;bar\\baz\";P:randompassword;H:true;;"###);
     }
 
@@ -78,7 +78,7 @@ mod tests {
     fn test_normal_ssid() {
         assert_eq!(Credentials::new(Some(r###""foo;bar\baz""###), 
                                     Some("randompassword"), 
-                                    Some("WPA2"), false).format().unwrap(),
+                                    Some("WPA2"), false, false).format().unwrap(),
             r###"WIFI:T:WPA2;S:\"foo\;bar\\baz\";P:randompassword;;"###);
     }
 
@@ -88,12 +88,14 @@ mod tests {
         assert!(Credentials::new(Some(r###""foo;bar\baz""###), 
                                     Some(""), 
                                     Some("wpa"), 
-                                    false).format().is_err(), "wpa2 requires a password");
+                                    false, false).format().is_err(), 
+        "wpa2 requires a password");
  
         assert!(Credentials::new(Some(r###""foo;bar\baz""###), 
                                     Some(""), 
                                     Some("wpa2"), 
-                                    false).format().is_err(), "wpa2 requires a password");
+                                    false, false).format().is_err(), 
+        "wpa2 requires a password");
     }
 
     // Require a password when using wep
@@ -102,7 +104,8 @@ mod tests {
         assert!(Credentials::new(Some(r###""foo;bar\baz""###), 
                                     Some(""), 
                                     Some("wep"), 
-                                    false).format().is_err(), "wep requires a password");
+                                    false, false).format().is_err(), 
+        "wep requires a password");
     }
 
     #[test]
@@ -110,7 +113,8 @@ mod tests {
         assert!(Credentials::new(Some("bane"), 
                                     Some(""), 
                                     Some("nopass"), 
-                                    false).format().is_ok(), "nopass specified with a blank password should work");
+                                    false, false).format().is_ok(), 
+        "nopass specified with a blank password should work");
     }
 
     // Test various auth (T) types, like WPA/WPA2
@@ -118,32 +122,32 @@ mod tests {
     fn test_auth_types() {
         // wep
         assert_eq!(
-            Credentials::new(Some("test"), Some("password"), Some("wep"), false).format().unwrap(),
+            Credentials::new(Some("test"), Some("password"), Some("wep"), false, false).format().unwrap(),
             "WIFI:T:WEP;S:test;P:password;;"
         );
 
         // wpa
         assert_eq!(
-            Credentials::new(Some("test"), Some("password"), Some("WPA"), false).format().unwrap(),
+            Credentials::new(Some("test"), Some("password"), Some("WPA"), false, false).format().unwrap(),
             "WIFI:T:WPA;S:test;P:password;;"
         );
 
         // wpa2 -- note that the wifi string has WPA2 in caps. it seems that iOS devices are sensitive
         // to the T: parameter being lowercase (and will return 'no usable data found')
         assert_eq!(
-            Credentials::new(Some("test"), Some("password"), Some("wpa2"), false).format().unwrap(),
+            Credentials::new(Some("test"), Some("password"), Some("wpa2"), false, false).format().unwrap(),
             "WIFI:T:WPA2;S:test;P:password;;"
         );
 
         // wpa3
         assert_eq!(
-            Credentials::new(Some("test"), Some("password"), Some("wpa3"), false).format().unwrap(),
+            Credentials::new(Some("test"), Some("password"), Some("wpa3"), false, false).format().unwrap(),
             "WIFI:T:WPA3;S:test;P:password;;"
         );
 
         // nopass -- unlike wpa2/wpa3, etc, nopass is accepted by iOS devices uncapitalized
         assert_eq!(
-            Credentials::new(Some("test"), Some(""), Some("nopass"), false).format().unwrap(),
+            Credentials::new(Some("test"), Some(""), Some("nopass"), false, false).format().unwrap(),
             "WIFI:T:nopass;S:test;;"
         );
     }
@@ -153,14 +157,15 @@ mod tests {
         assert!(Credentials::new(Some(r###""foo;bar\baz""###), 
                                     Some("password"), 
                                     Some("nopass"), 
-                                    false).format().is_err(), "nopass cannot be specified with a password");
+                                    false, false).format().is_err(), 
+        "nopass cannot be specified with a password");
     }
 
     // ensure that nopass is set along with an empty password when it is requested by the user
     #[test]
     fn test_encr_nopass_with_empty_password() {
         assert_eq!(
-            Credentials::new(Some("test"), Some(""), Some("nopass"), false).format().unwrap(),
+            Credentials::new(Some("test"), Some(""), Some("nopass"), false, false).format().unwrap(),
             "WIFI:T:nopass;S:test;;"
         );
     }

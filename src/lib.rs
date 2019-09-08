@@ -1,13 +1,9 @@
 // wifiqr
 // A crate to transform Wifi credentials into a scannable QR code
-//
-// Current limitations:
-// * Hexadecimal input for the wifi password is not supported
+
 extern crate image;
 extern crate qrcodegen;
 
-// * HEX `S` / `P` : its possible that these could be interpreted as hex if ascii. Add quotes
-// unless an option is set to ignore it
 macro_rules! wifi_auth {
     // Derived from:
     // https://github.com/zxing/zxing/wiki/Barcode-Contents#wifi-network-config-android
@@ -67,7 +63,7 @@ mod tests {
             ))
         );
     }
-   
+
     // Ensure that the hidden flag is added if requested 
     #[test]
     fn test_hidden_ssid() {
@@ -186,6 +182,7 @@ pub mod code {
         pub pass: String,
         pub encr: String,
         pub hidden: bool,
+        pub quote: bool,
     }
 
     impl Credentials {
@@ -194,12 +191,14 @@ pub mod code {
             mut _password: Option<&str>,
             mut _encr: Option<&str>,
             mut _hidden: bool,
+            mut _quote: bool,
         ) -> Self {
             return Credentials {
                 ssid: _ssid.unwrap().to_string(),
                 encr: _encr.unwrap().to_string(),
                 pass: _password.unwrap().to_string(),
-                hidden: _hidden
+                hidden: _hidden,
+                quote: _quote,
             };
         }
 
@@ -209,14 +208,22 @@ pub mod code {
         fn filter_credentials(&self, field: &str) -> String {
             // N.B. If performance problems ever crop up, this might be more performant
             // with regex replace_all 
-            return field.to_string()
+
+            let mut filtered = field.to_string()
                 .replace(r#"\"#, r#"\\"#)
                 .replace(r#"""#, r#"\""#)
                 .replace(r#";"#, r#"\;"#)
                 .replace(r#":"#, r#"\:"#);
+
+            if (filtered == self.ssid || filtered == self.pass) && self.quote {
+                // println!("Adding quotes to SSID/Password -- quote is not set");
+                filtered = format!("\"{}\"", field.to_string());
+            }
+
+            return filtered
         }
-        
-        // the Encryption field in the Wifi QR code fails on iOS devices if it is
+
+        // the encryption field in the Wifi QR code fails on iOS devices if it is
         // not provided in an uppercase format. Android devices are case insensitive,
         // so the encryption field is passed through as uppercase now.
         fn filter_encr(&self, field: &str) -> String {
@@ -225,7 +232,7 @@ pub mod code {
             }
             return field.to_string();
         }
-       
+
         // Call the wifi_auth! macro to generate a qr-string and/or return any errors that 
         // need to be raised to the caller. Note: format does not enforce an encryption type, it is
         // up to the end user to use the right value if one is provided.
@@ -241,15 +248,17 @@ pub mod code {
 
             if self.encr == "nopass" || self.encr.is_empty() {
                 if !self.pass.is_empty() {
-                    return Err("With nopass as the encryption type (or unset encryption type), the password field should be empty. 
-                        (Encryption should probably be set to something like wpa2)")
+                    return Err("With nopass as the encryption type (or unset encryption type), 
+                        the password field should be empty. (Encryption should probably be set 
+                        to something like wpa2)")
                 }
             }
-    
+
             if self.pass.is_empty() || self.pass == "" {
                 // Error condition: Password is empty, and the T (encr) type is not "nopass" / not empty
                 if self.encr != "nopass" && !self.encr.is_empty() {
-                    return Err("The encryption method requested requires a password.")
+                    return Err("The encryption method requested requires a password. 
+                        If you would like no password, set '--encr nopass'")
                 }
 
                 if self.encr.is_empty() || self.encr == "nopass" {
@@ -264,7 +273,7 @@ pub mod code {
                             wifi_auth!(nopass),
                             self.filter_credentials(&self.ssid),
                         ));
-                    } 
+                    }
                 }
             }
 
@@ -284,7 +293,7 @@ pub mod code {
                     self.filter_credentials(&self.pass)
                 ))
             }
-       }
+        }
 
         // Transform the QR Wifi connection string into a Vec<char> for use with manual_encode()
         pub fn format_vec(&self) -> Vec<char> {
@@ -294,8 +303,9 @@ pub mod code {
 
     // returns a new Credentials struct given Wifi credentials. This data is not validated,
     // nor formatted into a QR code string. Use .format() to do this
-    pub fn auth(_ssid: Option<&str>, _password: Option<&str>, _encr: Option<&str>, _hidden: bool) -> Credentials {
-        return self::Credentials::new(_ssid, _password, _encr, _hidden);
+    pub fn auth(_ssid: Option<&str>, _password: Option<&str>, _encr: Option<&str>, 
+        _hidden: bool, _quote: bool) -> Credentials {
+        return self::Credentials::new(_ssid, _password, _encr, _hidden, _quote);
     }
 
     // generates a qrcode from a Credentials configuration 

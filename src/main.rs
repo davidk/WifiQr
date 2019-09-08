@@ -106,8 +106,14 @@ fn main() {
                 .display_order(12)
                 .help("Ask for password instead of getting it through the command-line")
         )
+        .arg(
+            Arg::with_name("quote")
+                .long("quote")
+                .takes_value(false)
+                .display_order(13)
+                .help("If the SSID or password could be mistaken for a hexadecimal value, this option will add double-quotes around the SSID and password")
+        )
         .get_matches();
-
 
     let mut password = String::new();
 
@@ -124,14 +130,17 @@ fn main() {
         Some(&password),
         options.value_of("encryption"),
         options.is_present("hidden"),
+        options.is_present("quote"),
     );
 
     if options.is_present("debug") {
-        println!("SSID: {} | PASSWORD: {} | ENCRYPTION: {} | HIDDEN: {}", 
+        println!("SSID: {} | PASSWORD: {} | ENCRYPTION: {} | HIDDEN: {} | QUOTE SSID/PASSWORD: {}", 
                 options.value_of("ssid").unwrap(), 
                 password, 
                 options.value_of("encryption").unwrap(),
-                options.is_present("hidden"));
+                options.is_present("hidden"),
+                options.is_present("quote"),
+        );
 
         println!("Wifi string: {:?}", config.format().unwrap());
     }

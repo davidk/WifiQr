@@ -10,7 +10,9 @@ fn main() {
         .version("0.0.3")
         .about("Encode your wi-fi credentials as a scannable QR code")
         .author("davidk")
-        .usage("wifiqr --ssid (ssid) [ --password (password) | --ask ] --encr [ encryption type (default:wpa2) ] [ --imagefile (output_name.png) | --svg | --svgfile (output_name.svg) ]")
+        .usage("wifiqr [ --ssid (ssid) ] [ --password (password) | --ask ]
+            [ --encr encryption type (default:wpa2) ]
+            [ --imagefile (output_name.png) | --svg | --svgfile (output_name.svg) ]")
         .arg(
             Arg::with_name("ssid")
                 .long("ssid")
@@ -111,16 +113,20 @@ fn main() {
                 .long("quote")
                 .takes_value(false)
                 .display_order(13)
-                .help("If the SSID or password could be mistaken for a hexadecimal value, this option will add double-quotes around the SSID and password")
+                .help("If the SSID or password could be mistaken for a hexadecimal value, 
+                    this option will add double-quotes around the SSID and password")
         )
         .get_matches();
 
     let mut password = String::new();
 
     if options.is_present("ask") {
-        print!("Enter password for network `{}` (will echo to screen): ", options.value_of("ssid").unwrap());
+        print!("Enter password for network `{}` (will echo to screen): ", 
+            options.value_of("ssid").unwrap()
+        );
         io::stdout().flush().unwrap();
         io::stdin().read_line(&mut password).expect("Failed to read password");
+        // Remove newlines present
         password = password.trim().to_string();
     } else {
         password = options.value_of("password").unwrap().to_string();
@@ -154,38 +160,28 @@ fn main() {
     let image_file: String = options.value_of("image_file").unwrap_or("qr.png").parse().unwrap();
 
     if options.is_present("svg_file") {
-
         println!("Generating QR code ..");
         let file_name = options.value_of("svg_file").unwrap();
-       
+
         println!("Writing out to SVG file: {} ..", file_name);
         let svg_data = wifiqr::code::make_svg(&encoding);
 
         fs::write(file_name, svg_data).expect("Unable to write file");
-        
     } else if options.is_present("image_file") {
-
         println!("Generating QR code ..");
 
-        println!("Scale {} + Quiet Zone: {} ", quiet_zone, scale); 
+        println!("Scale {} + Quiet Zone: {} ", quiet_zone, scale);
         println!("Writing out to file ..");
-       
+
         let image = wifiqr::code::make_image(&encoding, scale, quiet_zone);
         wifiqr::code::save_image(&image, image_file.to_string());
-        
+
         println!("The QR code has been saved to {}", image_file);
-
     } else if options.is_present("svg") {
-
         println!("{}", wifiqr::code::make_svg(&encoding));
-
     } else if options.is_present("console") {
-
         wifiqr::code::console_qr(&encoding, quiet_zone);
-    
     } else {
-
         println!("Please select an output format. For available formats, re-run with --help");
-
     }
 }

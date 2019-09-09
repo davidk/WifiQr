@@ -6,11 +6,7 @@ This Rust crate encodes Wifi credentials into a QR code. A command-line interfac
 
 To use WifiQr's command-line implementation, download a pre-built binary from the releases tab.
 
-### Crate
-
-The crate is not currently available on crates.io, but can be downloaded from this repository. Please be sure to pin the version you're using to a specific commit/release, to avoid backwards incompatible changes (this is not anticipated, but it may happen).
-
-### Usage
+### Utility usage
 
 	WifiQR 0.02
 	davidk
@@ -37,6 +33,31 @@ The crate is not currently available on crates.io, but can be downloaded from th
 					    2]
 		--imagefile <image_file>    The name of the file to save to (e.g. --imagefile qr.png). Formats: [png, jpg, bmp]
 		--svgfile <svg_file>        Save the QR code to a file (SVG formatted)
+
+
+### Crate
+
+The crate is not currently available on crates.io, but can be downloaded from this repository. Please be sure to pin the version you're using to a specific commit/release, to avoid backwards incompatible changes (this is not anticipated, but it may happen).
+
+```rust
+extern crate wifiqr;
+let quiet_zone = 5;
+let config = wifiqr::code::auth(
+    ssid,				// Network name
+    password,				// Network password/passphrase
+    encryption,				// WPA/WPA2/WEP
+    is_hidden,				// boolean
+    quote_ssid_password,		// boolean
+);
+
+let encoding = wifiqr::code::encode(&config).expect("There was a problem generating the QR code");
+
+// this prints a qr code to the console
+wifiqr::code::console_qr(&encoding, quiet_zone);
+
+// this passes the svg output from the QR encoder back
+println!("{}", wifiqr::code::make_svg(&encoding));
+```
 
 #### Building
 

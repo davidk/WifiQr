@@ -1,6 +1,6 @@
-name: Rust
+name: Rust Release Builder
 
-on: [push]
+on: [release]
 
 jobs:
   build:
@@ -9,7 +9,39 @@ jobs:
 
     steps:
     - uses: actions/checkout@master
-    - name: Build
-      run: cargo build --verbose
+
     - name: Run tests
       run: cargo test --verbose
+
+    - name: Build
+      run: cargo build --release --verbose
+
+    - name: Install cross compiler
+      run: cargo install cross
+
+    - name: Build for ARMv7
+      run: cross build --target armv7-unknown-linux-gnueabihf --release
+
+    - uses: actions/bin/sh@master
+      with:
+       args: '"mv /github/workspace/target/release/wifiqr /github/workspace/target/release/wifiqr-linux-x86-64" "mv /github/workspace/target/armv7-unknown-linux-gnueabihf/release/wifiqr /github/workspace/target/armv7-unknown-linux-gnueabihf/release/wifiqr-armv7"'
+
+    - name: Compress binaries with xz
+      uses: actions/bin/sh@master
+      with:
+        args: '"apt-get update" "apt-get -y install xz-utils" "xz -T0 -f /github/workspace/target/armv7-unknown-linux-gnueabihf/release/wifiqr-armv7" "xz -T0 -f /github/workspace/target/release/wifiqr-linux-x86-64"'
+
+    - name: Release ARMv7 binary
+      uses: JasonEtco/upload-to-release@master
+      with:
+        args: '"/github/workspace/target/armv7-unknown-linux-gnueabihf/release/wifiqr-armv7.xz" "application/x-xz"'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Release x86-64 binary
+      uses: JasonEtco/upload-to-release@master
+      with:
+        args: '"/github/workspace/target/release/wifiqr-linux-x86-64.xz" "application/x-xz"'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

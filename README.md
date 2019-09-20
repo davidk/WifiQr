@@ -1,19 +1,17 @@
 # WifiQr
 
-This Rust crate encodes Wifi credentials into a QR code. A command-line interface is available for testing and basic use, too.
+This Rust crate encodes Wifi credentials into a QR code. A [command-line interface](https://github.com/davidk/WifiQr/releases) is available for testing and basic use, too.
 
 ### Releases
 
-To use WifiQr's command-line implementation, download a pre-built binary from the releases tab.
+To use WifiQr's command-line implementation, download a pre-built binary from the [releases tab](https://github.com/davidk/WifiQr/releases).
 
 ### Utility usage
 
-	WifiQR 0.02
-	davidk
-	Encode your wi-fi credentials as a scannable QR code
-
 	USAGE:
-	    wifiqr --ssid (ssid) [ --password (password) | --ask ] --encr [ encryption type (default:wpa2) ] [ --imagefile (output_name.png) | --svg | --svgfile (output_name.svg) ]
+	    wifiqr [ --ssid (ssid) ] [ --password (password) | --ask ]
+		    [ --encr encryption type (default:wpa2) ]
+		    [ --imagefile (output_name.png) | --svg | --svgfile (output_name.svg) ]
 
 	FLAGS:
 		--hidden     Optional: Indicate whether or not the SSID is hidden
@@ -21,6 +19,8 @@ To use WifiQr's command-line implementation, download a pre-built binary from th
 		--console    Print the QR code out to the console
 	    -d, --debug      Display some extra debugging output
 	    -a, --ask        Ask for password instead of getting it through the command-line
+		--quote      If the SSID or password could be mistaken for a hexadecimal value, 
+						 this option will add double-quotes around the SSID and password
 	    -h, --help       Prints help information
 	    -V, --version    Prints version information
 
@@ -34,10 +34,9 @@ To use WifiQr's command-line implementation, download a pre-built binary from th
 		--imagefile <image_file>    The name of the file to save to (e.g. --imagefile qr.png). Formats: [png, jpg, bmp]
 		--svgfile <svg_file>        Save the QR code to a file (SVG formatted)
 
-
 ### Crate
 
-The crate is not currently available on crates.io, but can be downloaded from this repository. Please be sure to pin the version you're using to a specific commit/release, to avoid backwards incompatible changes (this is not anticipated, but it may happen).
+The crate is not currently available on crates.io, but can be downloaded from this repository. Please be sure to pin the version you're using to a specific commit/release, to avoid sudden backwards incompatible changes (this is not anticipated, but it may happen).
 
 ```rust
 extern crate wifiqr;

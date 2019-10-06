@@ -2,6 +2,8 @@
 
 This Rust crate encodes Wifi credentials into a QR code. A [command-line interface](https://github.com/davidk/WifiQr/releases) is available for testing and basic use, too.
 
+<p align="center"><img src="/img/wifiqr-demo.gif?raw=true"/></p>
+
 ### Releases
 
 To use WifiQr's command-line implementation, download a pre-built binary from the [releases tab](https://github.com/davidk/WifiQr/releases).

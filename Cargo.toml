@@ -1,8 +1,12 @@
 [package]
 name = "wifiqr"
 version = "0.0.4"
-authors = ["davidk <kdavid@gmail.com>"]
+authors = ["davidk"]
 edition = "2018"
+license = "MIT"
+description = "Generate QR codes for wifi access"
+repository = "https://github.com/davidk/WifiQr"
+readme = "README.md"
 
 [dependencies]
 qrcodegen = "1.4.0"

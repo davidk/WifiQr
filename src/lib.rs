@@ -1,5 +1,5 @@
-// wifiqr
-// A crate to transform Wifi credentials into a scannable QR code
+/// wifiqr
+/// A crate to transform Wifi credentials into a scannable QR code
 
 extern crate image;
 extern crate qrcodegen;
@@ -26,7 +26,7 @@ mod tests {
     use super::code::{encode, make_svg, manual_encode};
     use qrcodegen::{QrCodeEcc, Version};
 
-    // Basic functionality test
+    /// Basic functionality test
     #[test]
     fn test_credentials() {
         assert_eq!(
@@ -35,7 +35,7 @@ mod tests {
         );
     }
 
-    // Test credential escaping; per Zxing guidelines on how to format a `WIFI:` string
+    /// Test credential escaping; per Zxing guidelines on how to format a `WIFI:` string
     #[test]
     fn test_credentials_escapes() {
         assert_eq!(
@@ -47,7 +47,7 @@ mod tests {
         );
     }
 
-    // Exercise the automatic qr encoder against the manual encoder
+    /// Exercise the automatic qr encoder against the manual encoder
     #[test]
     fn test_qrcodes() {
         let credentials = Credentials::new(Some("test"), Some("WPA"), Some("test"), false, false);
@@ -64,7 +64,7 @@ mod tests {
         );
     }
 
-    // Ensure that the hidden flag is added if requested 
+    /// Ensure that the hidden flag is added if requested 
     #[test]
     fn test_hidden_ssid() {
         assert_eq!(Credentials::new(Some(r###""foo;bar\baz""###), 
@@ -73,7 +73,7 @@ mod tests {
             r###"WIFI:T:WPA2;S:\"foo\;bar\\baz\";P:randompassword;H:true;;"###);
     }
 
-    // If a ssid isn't hidden, it shouldn't be set in the formatted string
+    /// If a ssid isn't hidden, it shouldn't be set in the formatted string
     #[test]
     fn test_normal_ssid() {
         assert_eq!(Credentials::new(Some(r###""foo;bar\baz""###), 
@@ -82,7 +82,7 @@ mod tests {
             r###"WIFI:T:WPA2;S:\"foo\;bar\\baz\";P:randompassword;;"###);
     }
 
-    // Require a password when wpa/wpa2 is requested
+    /// Require a password when wpa/wpa2 is requested
     #[test]
     fn test_nopassword_with_wpa2() {
         assert!(Credentials::new(Some(r###""foo;bar\baz""###), 
@@ -98,7 +98,7 @@ mod tests {
         "wpa2 requires a password");
     }
 
-    // Require a password when using wep
+    /// Require a password when using wep
     #[test]
     fn test_nopassword_with_wep() {
         assert!(Credentials::new(Some(r###""foo;bar\baz""###), 
@@ -117,7 +117,7 @@ mod tests {
         "nopass specified with a blank password should work");
     }
 
-    // Test various auth (T) types, like WPA/WPA2
+    /// Test various auth (T) types, like WPA/WPA2
     #[test]
     fn test_auth_types() {
         // wep
@@ -161,7 +161,7 @@ mod tests {
         "nopass cannot be specified with a password");
     }
 
-    // ensure that nopass is set along with an empty password when it is requested by the user
+    /// ensure that nopass is set along with an empty password when it is requested by the user
     #[test]
     fn test_encr_nopass_with_empty_password() {
         assert_eq!(
@@ -170,7 +170,7 @@ mod tests {
         );
     }
 
-    // when quote is set, ensure that the result is quoted
+    /// when quote is set, ensure that the result is quoted
     #[test]
     fn test_quoted_ssid_password() {
         assert_eq!(
@@ -180,6 +180,7 @@ mod tests {
     }
 }
 
+/// Wifi QR code generator
 pub mod code {
 
     use std::convert::TryInto;
@@ -216,9 +217,9 @@ pub mod code {
             };
         }
 
-        // escape characters as in:
-        // https://github.com/zxing/zxing/wiki/Barcode-Contents#wifi-network-config-android
-        // Special characters `\`, `;`, `,` and `:` should be escaped with a backslash
+        /// escape characters as in:
+        /// https://github.com/zxing/zxing/wiki/Barcode-Contents#wifi-network-config-android
+        /// Special characters `\`, `;`, `,` and `:` should be escaped with a backslash
         fn filter_credentials(&self, field: &str) -> String {
             // N.B. If performance problems ever crop up, this might be more performant
             // with regex replace_all 
@@ -237,9 +238,9 @@ pub mod code {
             return filtered
         }
 
-        // the encryption field in the Wifi QR code fails on iOS devices if it is
-        // not provided in an uppercase format. Android devices are case insensitive,
-        // so the encryption field is passed through as uppercase now.
+        /// the encryption field in the Wifi QR code fails on iOS devices if it is
+        /// not provided in an uppercase format. Android devices are case insensitive,
+        /// so the encryption field is passed through as uppercase now.
         fn filter_encr(&self, field: &str) -> String {
             if field != "nopass" && !self.encr.is_empty() {
                 return field.to_string().to_uppercase();
@@ -247,9 +248,9 @@ pub mod code {
             return field.to_string();
         }
 
-        // Call the wifi_auth! macro to generate a qr-string and/or return any errors that 
-        // need to be raised to the caller. Note: format does not enforce an encryption type, it is
-        // up to the end user to use the right value if one is provided.
+        /// Call the wifi_auth! macro to generate a qr-string and/or return any errors that 
+        /// need to be raised to the caller. Note: format does not enforce an encryption type, it is
+        /// up to the end user to use the right value if one is provided.
         pub fn format(&self) -> Result<String, &'static str> {
             // empty password ->
             //  * is password empty and ssid hidden? => set T:nopass and H:
@@ -315,22 +316,22 @@ pub mod code {
         }
     }
 
-    // returns a new Credentials struct given Wifi credentials. This data is not validated,
-    // nor formatted into a QR code string. Use .format() to do this
+    /// returns a new Credentials struct given Wifi credentials. This data is not validated,
+    /// nor formatted into a QR code string. Call .format() on Credentials to do this.
     pub fn auth(_ssid: Option<&str>, _password: Option<&str>, _encr: Option<&str>, 
         _hidden: bool, _quote: bool) -> Credentials {
         return self::Credentials::new(_ssid, _password, _encr, _hidden, _quote);
     }
 
-    // generates a qrcode from a Credentials configuration 
+    /// generates a qrcode from a Credentials configuration 
     pub fn encode(config: &Credentials) -> Result<QrCode, DataTooLong> {
         let q = QrCode::encode_text(&config.format().unwrap(), QrCodeEcc::High)?;
         Ok(q)
     }
 
-    // manual_encode isn't intended for use externally, but exists to compare between the
-    // automated encoder and this manual_encode version
-    // https://docs.rs/qrcodegen/latest/src/qrcodegen/lib.rs.html#151
+    /// manual_encode isn't intended for use externally, but exists to compare between the
+    /// automated encoder and this manual_encode version
+    /// https://docs.rs/qrcodegen/latest/src/qrcodegen/lib.rs.html#151
     pub fn manual_encode(config: &Credentials, error_level: QrCodeEcc, lowest_version: qrcodegen::Version, 
         highest_version: qrcodegen::Version, mask_level: Option<Mask>) -> QrCode {
 
@@ -347,17 +348,20 @@ pub mod code {
         ).unwrap();
     }
 
+    /// generates an svg string from a QrCode (output from the QR library)
+    ///
+    /// * qrcode: &QrCode
+    ///
     pub fn make_svg(qrcode: &QrCode) -> String {
         return qrcode.to_svg_string(4);
     }
 
-    // console_qr
-    // generate a wifi qr code that can be output to the console for quick scanning
-    // parameters:
-    // - qrcode: encoded qrcode
-    // - quiet_zone: the border size to apply to the QR code (created with ASCII_BL_BLOCK)
-    // result:
-    // - this prints a block of text directly to the console
+    /// generates a wifi qr code that is printed to a terminal/console for quick scanning
+    /// parameters:
+    /// - qrcode: encoded qrcode
+    /// - quiet_zone: the border size to apply to the QR code (created with ASCII_BL_BLOCK)
+    /// result:
+    /// - this prints a block of text directly to the console
     pub fn console_qr(qrcode: &QrCode, quiet_zone: i32) {
         const ASCII_BL_BLOCK: &str = "  ";
         const ASCII_W_BLOCK: &str = "██";
@@ -401,12 +405,15 @@ pub mod code {
         }
     }
 
-    // make_image
-    // qrcode: Is an encoded qrcode
-    // scale: The scaling factor to apply to the qrcode
-    // border_size: How large to make the quiet zone
-    // This returns an ImageBuffer<> that can be saved using save_image(), or passed on
-    // for further manipulation by the caller
+    /// returns an ImageBuffer<> that can be saved using save_image(), or passed on
+    /// for further manipulation by the caller
+    /// 
+    ///
+    /// * qrcode: Is an encoded qrcode
+    /// 
+    /// * scale: The scaling factor to apply to the qrcode
+    /// 
+    /// * border_size: How large to make the quiet zone
     pub fn make_image(qrcode: &QrCode, scale: i32, border_size: i32) -> ImageBuffer<LumaA<u8>, Vec<u8>> {
         let new_qr_size = qrcode.size() * scale;
 
@@ -445,9 +452,12 @@ pub mod code {
         return image;
     }
 
-    // save_image
-    // image: ImageBuffer<>
-    // save_file: file to save the image into
+
+    /// saves an image to a file
+    ///
+    /// * image: ImageBuffer<>
+    ///
+    /// * save_file: file path to save the image into
     pub fn save_image(image: &ImageBuffer<LumaA<u8>, Vec<u8>>, save_file: String) {
         let _ = image.save(save_file).unwrap();
     }

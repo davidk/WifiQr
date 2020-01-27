@@ -1,10 +1,9 @@
 name: Rust Release Builder
 
-on: [release]
+on: release
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -13,35 +12,38 @@ jobs:
     - name: Run tests
       run: cargo test --verbose
 
-    - name: Build
-      run: cargo build --release --verbose
+#    - name: Build
+#      run: cargo build --release
 
     - name: Install cross compiler
       run: cargo install cross
 
-    - name: Build for ARMv7
-      run: cross build --target armv7-unknown-linux-gnueabihf --release
+#    - name: Build for ARMv7
+#      run: cross build --target armv7-unknown-linux-gnueabihf --release
 
-    - uses: actions/bin/sh@master
-      with:
-       args: '"mv /github/workspace/target/release/wifiqr /github/workspace/target/release/wifiqr-linux-x86-64" "mv /github/workspace/target/armv7-unknown-linux-gnueabihf/release/wifiqr /github/workspace/target/armv7-unknown-linux-gnueabihf/release/wifiqr-armv7"'
-
-    - name: Compress binaries with xz
-      uses: actions/bin/sh@master
-      with:
-        args: '"apt-get update" "apt-get -y install xz-utils" "xz -T0 -f /github/workspace/target/armv7-unknown-linux-gnueabihf/release/wifiqr-armv7" "xz -T0 -f /github/workspace/target/release/wifiqr-linux-x86-64"'
+    - name: Build and compress x86_64 binaries with xz
+      run: |
+        cargo build --release
+        xz -T0 -f ${GITHUB_WORKSPACE}/target/release/wifiqr
+        mv ${GITHUB_WORKSPACE}/target/release/wifiqr.xz ${GITHUB_WORKSPACE}/target/release/wifiqr.x86_64.xz
+ 
+    - name: Build and compress armv7 binaries with xz
+      run: |
+        cross build --target armv7-unknown-linux-gnueabihf --release
+        xz -T0 -f ${GITHUB_WORKSPACE}/target/armv7-unknown-linux-gnueabihf/release/wifiqr
+        mv ${GITHUB_WORKSPACE}/target/armv7-unknown-linux-gnueabihf/release/wifiqr.xz ${GITHUB_WORKSPACE}/target/armv7-unknown-linux-gnueabihf/release/wifiqr.armv7.xz
 
     - name: Release ARMv7 binary
       uses: JasonEtco/upload-to-release@master
       with:
-        args: '"/github/workspace/target/armv7-unknown-linux-gnueabihf/release/wifiqr-armv7.xz" "application/x-xz"'
+        args: /github/workspace/target/armv7-unknown-linux-gnueabihf/release/wifiqr.armv7.xz application/x-xz
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Release x86-64 binary
       uses: JasonEtco/upload-to-release@master
       with:
-        args: '"/github/workspace/target/release/wifiqr-linux-x86-64.xz" "application/x-xz"'
+        args: /github/workspace/target/release/wifiqr.x86_64.xz application/x-xz
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

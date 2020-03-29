@@ -38,26 +38,30 @@ To use WifiQr's command-line implementation, download a pre-built binary from th
 
 ### Crate
 
-The crate is not currently available on crates.io, but can be downloaded from this repository. Please be sure to pin the version you're using to a specific commit/release, to avoid sudden backwards incompatible changes (this is not anticipated, but it may happen).
+This crate is available on [crates.io](https://crates.io/crates/wifiqr). Please be sure to pin the version you're using to a specific release (or commit), to avoid any changes that may break your application (efforts will be made to ensure that this is not the case).
 
 ```rust
 extern crate wifiqr;
-let quiet_zone = 5;
-let config = wifiqr::code::auth(
-    ssid,				// Network name
-    password,				// Network password/passphrase
-    encryption,				// WPA/WPA2/WEP
-    is_hidden,				// boolean
-    quote_ssid_password,		// boolean
-);
 
-let encoding = wifiqr::code::encode(&config).expect("There was a problem generating the QR code");
+fn main() {
+    let quiet_zone = 5;
+    let config = wifiqr::code::auth(
+        Some("ssid"),       // Network name (ssid)
+        Some("password"),   // Network password/passphrase
+        Some("wpa2"),       // WPA | WPA2 | WEP
+        false,              // Hidden SSID (true | false)
+        false,              // SSID needs to be quoted (true | false)
+    );
 
-// this prints a qr code to the console
-wifiqr::code::console_qr(&encoding, quiet_zone);
+    let encoding = wifiqr::code::encode(&config).expect("There was a problem generating the QR code");
 
-// this passes the svg output from the QR encoder back
-println!("{}", wifiqr::code::make_svg(&encoding));
+    // this passes the svg output from the QR encoder back
+    println!("{}", wifiqr::code::make_svg(&encoding));
+
+    // this prints a qr code to the console
+    wifiqr::code::console_qr(&encoding, quiet_zone);
+}
+
 ```
 
 #### Building

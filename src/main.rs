@@ -1,9 +1,10 @@
 extern crate clap;
 extern crate wifiqr;
+extern crate rpassword;
 
-use std::{fs, io};
-use std::io::Write;
+use std::fs;
 use clap::{App, Arg, ArgGroup};
+use rpassword::prompt_password_stdout;
 
 fn main() {
     let options = App::new("WifiQR")
@@ -118,16 +119,13 @@ fn main() {
         )
         .get_matches();
 
-    let mut password = String::new();
+    let password;
 
     if options.is_present("ask") {
-        print!("Enter password for network `{}` (will echo to screen): ", 
-            options.value_of("ssid").unwrap()
-        );
-        io::stdout().flush().unwrap();
-        io::stdin().read_line(&mut password).expect("Failed to read password");
-        // Remove newlines present
-        password = password.trim().to_string();
+        password = prompt_password_stdout(
+            format!("Enter password for network `{}` (will not echo to screen): ", 
+                    options.value_of("ssid").unwrap())
+            .as_str()).unwrap();
     } else {
         password = options.value_of("password").unwrap().to_string();
     }

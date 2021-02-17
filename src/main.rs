@@ -2,7 +2,9 @@ extern crate clap;
 extern crate wifiqr;
 extern crate rpassword;
 
-use std::fs;
+use std::{fs,io};
+use std::io::Write;
+
 use clap::{App, Arg, ArgGroup};
 use rpassword::prompt_password_stdout;
 
@@ -110,22 +112,37 @@ fn main() {
                 .help("Ask for password instead of getting it through the command-line")
         )
         .arg(
+            Arg::with_name("ask-echo")
+                .long("ask-echo")
+                .takes_value(false)
+                .display_order(13)
+                .help("Ask for password while displaying input on the console")
+        )
+        .arg(
             Arg::with_name("quote")
                 .long("quote")
                 .takes_value(false)
-                .display_order(13)
+                .display_order(14)
                 .help("If the SSID or password could be mistaken for a hexadecimal value, 
                     this option will add double-quotes around the SSID and password")
         )
         .get_matches();
 
-    let password;
+    let mut password = String::new();
 
     if options.is_present("ask") {
         password = prompt_password_stdout(
             format!("Enter password for network `{}` (will not echo to screen): ", 
                     options.value_of("ssid").unwrap())
             .as_str()).unwrap();
+    } else if options.is_present("ask-echo") {
+        print!("Enter password for network `{}` (will echo to screen): ",
+            options.value_of("ssid").unwrap()
+        );
+
+        io::stdout().flush().unwrap();
+        io::stdin().read_line(&mut password).expect("Failed to read password");
+        password = password.trim().to_string();
     } else {
         password = options.value_of("password").unwrap().to_string();
     }

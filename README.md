@@ -12,29 +12,30 @@ To use WifiQr's command-line implementation, download a pre-built binary from th
 
 	USAGE:
 	    wifiqr [ --ssid (ssid) ] [ --password (password) | --ask ]
-		    [ --encr encryption type (default:wpa2) ]
-		    [ --imagefile (output_name.png) | --svg | --svgfile (output_name.svg) ]
-
+	            [ --encr encryption type (default:wpa2) ]
+	            [ --imagefile (output_name.png) | --svg | --svgfile (output_name.svg) ]
+	
 	FLAGS:
-		--hidden     Optional: Indicate whether or not the SSID is hidden
-		--svg        Emit the QR code as an SVG (to standard output)
-		--console    Print the QR code out to the console
-	    -d, --debug      Display some extra debugging output
-	    -a, --ask        Ask for password instead of getting it through the command-line
-		--quote      If the SSID or password could be mistaken for a hexadecimal value, 
-						 this option will add double-quotes around the SSID and password
-	    -h, --help       Prints help information
-	    -V, --version    Prints version information
-
+	        --hidden      Optional: Indicate whether or not the SSID is hidden
+	        --svg         Emit the QR code as an SVG (to standard output)
+	        --console     Print the QR code out to the console
+	    -d, --debug       Display some extra debugging output
+	    -a, --ask         Ask for password instead of getting it through the command-line
+	        --ask-echo    Ask for password while displaying input on the console
+	        --quote       If the SSID or password could be mistaken for a hexadecimal value, 
+	                                          this option will add double-quotes around the SSID and password
+	    -h, --help        Prints help information
+	    -V, --version     Prints version information
+	
 	OPTIONS:
-		--ssid <ssid>               Sets the WiFi SSID
-		--password <password>       Sets the WiFi password [default: ]
-		--encr <encryption>         The WiFi's encryption type (wpa, wpa2, nopass) [default: wpa2]
-		--scale <scale>             QR code scaling factor [default: 10]
-		--quietzone <quiet_zone>    QR code: The size of the quiet zone/border to apply to the final QR code [default:
-					    2]
-		--imagefile <image_file>    The name of the file to save to (e.g. --imagefile qr.png). Formats: [png, jpg, bmp]
-		--svgfile <svg_file>        Save the QR code to a file (SVG formatted)
+	        --ssid <ssid>               Sets the WiFi SSID
+	        --password <password>       Sets the WiFi password [default: ]
+	        --encr <encryption>         The WiFi's encryption type (wpa, wpa2, nopass) [default: wpa2]
+	        --scale <scale>             QR code scaling factor [default: 10]
+	        --quietzone <quiet_zone>    QR code: The size of the quiet zone/border to apply to the final QR code [default:
+	                                    2]
+	        --imagefile <image_file>    The name of the file to save to (e.g. --imagefile qr.png). Formats: [png, jpg, bmp]
+	        --svgfile <svg_file>        Save the QR code to a file (SVG formatted)
 
 ### Crate
 

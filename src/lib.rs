@@ -16,7 +16,7 @@ macro_rules! wifi_auth {
     (nopass) => ("WIFI:T:nopass;S:{};;");
     (nopass_hidden) => ("WIFI:T:nopass;S:{};H:{};;");
     () => {
-        "WIFI:T:{};S:{};P:{};;";
+        "WIFI:T:{};S:{};P:{};;"
     };
 }
 

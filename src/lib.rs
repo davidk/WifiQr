@@ -256,15 +256,13 @@ mod tests {
 /// Wifi QR code generator
 pub mod code {
 
-    use std::convert::TryInto;
-
     use image::{ImageBuffer, LumaA};
     use qrcodegen::{DataTooLong, Mask, QrCode, QrCodeEcc, QrSegment};
 
-    use imageproc::drawing::draw_filled_rect_mut;
-    use imageproc::rect::Rect;
-
-    use crate::exporters::svg::to_svg_string;
+    use crate::exporters::methods::{
+        make_image as make_image_export, save_image as save_image_export,
+        to_svg_string as to_svg_string_export,
+    };
 
     #[derive(Debug)]
     pub struct Credentials {
@@ -417,8 +415,6 @@ pub mod code {
         highest_version: qrcodegen::Version,
         mask_level: Option<Mask>,
     ) -> QrCode {
-        //             return &Credentials::format(&self).unwrap();
-
         let segs: Vec<QrSegment> = QrSegment::make_segments(&config.format().unwrap());
 
         return QrCode::encode_segments_advanced(
@@ -430,15 +426,6 @@ pub mod code {
             true,
         )
         .unwrap();
-    }
-
-    /// generates an svg string from a QrCode (output from the QR library)
-    ///
-    /// * qrcode: &QrCode
-    ///
-
-    pub fn make_svg(qrcode: &QrCode) -> String {
-        return to_svg_string(&qrcode, 4);
     }
 
     /// generates a wifi qr code that is printed to a terminal/console for quick scanning
@@ -490,57 +477,20 @@ pub mod code {
         }
     }
 
-    /// returns an ImageBuffer<> that can be saved using save_image(), or passed on
-    /// for further manipulation by the caller
-    ///
-    ///
-    /// * qrcode: Is an encoded qrcode
-    ///
-    /// * scale: The scaling factor to apply to the qrcode
-    ///
-    /// * border_size: How large to make the quiet zone
     pub fn make_image(
         qrcode: &QrCode,
         scale: i32,
         border_size: i32,
     ) -> ImageBuffer<LumaA<u8>, Vec<u8>> {
-        let new_qr_size = qrcode.size() * scale;
+        return make_image_export(qrcode, scale, border_size);
+    }
 
-        // --- Initialize to a white canvas with the alpha layer pre-set ---
-        let mut image = ImageBuffer::from_pixel(
-            (new_qr_size + border_size * 2).try_into().unwrap(),
-            (new_qr_size + border_size * 2).try_into().unwrap(),
-            LumaA([255, 255]),
-        );
-
-        // --- Draw QR w/scale ---
-        for y in 0..new_qr_size {
-            for x in 0..new_qr_size {
-                if qrcode.get_module(x, y) {
-                    draw_filled_rect_mut(
-                        &mut image,
-                        Rect::at(
-                            (x * scale) + border_size as i32,
-                            (y * scale) + border_size as i32,
-                        )
-                        .of_size(scale as u32, scale as u32),
-                        LumaA([0, 255]),
-                    );
-                } else {
-                    draw_filled_rect_mut(
-                        &mut image,
-                        Rect::at(
-                            (x * scale) + border_size as i32,
-                            (y * scale) + border_size as i32,
-                        )
-                        .of_size(scale as u32, scale as u32),
-                        LumaA([255, 255]),
-                    );
-                }
-            }
-        }
-
-        return image;
+    /// generates an svg string from a QrCode (output from the QR library)
+    ///
+    /// * qrcode: &QrCode
+    ///
+    pub fn make_svg(qrcode: &QrCode) -> String {
+        return to_svg_string_export(&qrcode, 4);
     }
 
     /// saves an image to a file
@@ -549,6 +499,6 @@ pub mod code {
     ///
     /// * save_file: file path to save the image into
     pub fn save_image(image: &ImageBuffer<LumaA<u8>, Vec<u8>>, save_file: String) {
-        let _ = image.save(save_file).unwrap();
+        save_image_export(image, save_file);
     }
 }

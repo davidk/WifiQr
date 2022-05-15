@@ -1,6 +1,6 @@
 [package]
 name = "wifiqr"
-version = "0.0.7"
+version = "0.0.8"
 authors = ["davidk"]
 edition = "2018"
 license = "MIT"
@@ -9,7 +9,7 @@ repository = "https://github.com/davidk/WifiQr"
 readme = "README.md"
 
 [dependencies]
-qrcodegen = "1.4.0"
+qrcodegen = "1.8.0"
 image = "0.23.13"
 imageproc = "0.22.0"
 clap = "2.32.0"

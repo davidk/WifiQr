@@ -1,10 +1,88 @@
 extern crate qrcodegen;
 
-pub mod svg {
+pub mod methods {
     use qrcodegen::QrCode;
 
+    use std::convert::TryInto;
+
+    use image::{ImageBuffer, LumaA};
+    use imageproc::{drawing::draw_filled_rect_mut, rect::Rect};
+
+    /// returns an ImageBuffer<> that can be saved using save_image(), or passed on
+    /// for further manipulation by the caller
+    ///
+    ///
+    /// * qrcode: Is an encoded qrcode
+    ///
+    /// * scale: The scaling factor to apply to the qrcode
+    ///
+    /// * border_size: How large to make the quiet zone
+    pub fn make_image(
+        qrcode: &QrCode,
+        scale: i32,
+        border_size: i32,
+    ) -> ImageBuffer<LumaA<u8>, Vec<u8>> {
+        let new_qr_size = qrcode.size() * scale;
+
+        // --- Initialize to a white canvas with the alpha layer pre-set ---
+        let mut image = ImageBuffer::from_pixel(
+            (new_qr_size + border_size * 2).try_into().unwrap(),
+            (new_qr_size + border_size * 2).try_into().unwrap(),
+            LumaA([255, 255]),
+        );
+
+        // --- Draw QR w/scale ---
+        for y in 0..new_qr_size {
+            for x in 0..new_qr_size {
+                if qrcode.get_module(x, y) {
+                    draw_filled_rect_mut(
+                        &mut image,
+                        Rect::at(
+                            (x * scale) + border_size as i32,
+                            (y * scale) + border_size as i32,
+                        )
+                        .of_size(scale as u32, scale as u32),
+                        LumaA([0, 255]),
+                    );
+                } else {
+                    draw_filled_rect_mut(
+                        &mut image,
+                        Rect::at(
+                            (x * scale) + border_size as i32,
+                            (y * scale) + border_size as i32,
+                        )
+                        .of_size(scale as u32, scale as u32),
+                        LumaA([255, 255]),
+                    );
+                }
+            }
+        }
+
+        return image;
+    }
+
+    /// saves an image to a file
+    ///
+    /// * image: ImageBuffer<>
+    ///
+    /// * save_file: file path to save the image into. ImageBuffer only supports jpeg and png extensions.
+    pub fn save_image(image: &ImageBuffer<LumaA<u8>, Vec<u8>>, save_file: String) {
+        let _ = match image.save(save_file) {
+            Ok(f) => f,
+            Err(err) => panic!(
+                "Was an unsupported file extension supplied?. Try .jpeg or .png?\r\nError: {:#?}",
+                err
+            ),
+        };
+    }
+
+    /// returns a QR code that can be interpreted by an SVG reader
+    ///
+    /// * qr: &QrCode
+    ///
+    /// * border: size of border to apply to the SVG
     pub fn to_svg_string(qr: &QrCode, border: i32) -> String {
-        /* to_svg_string() is derived from Project Nayuki's QR Code Generator
+        /* to_svg_string is derived from Project Nayuki's QR Code Generator
          *
          * Copyright (c) Project Nayuki. (MIT License)
          * https://www.nayuki.io/page/qr-code-generator-library

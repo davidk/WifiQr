@@ -10,7 +10,7 @@ use rpassword::prompt_password_stdout;
 
 fn main() {
     let options = App::new("WifiQR")
-        .version("0.0.7")
+        .version("0.0.8")
         .about("Encode your wi-fi credentials as a scannable QR code")
         .author("davidk")
         .usage("wifiqr [ --ssid (ssid) ] [ --password (password) | --ask ]

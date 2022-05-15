@@ -1,8 +1,8 @@
 extern crate clap;
-extern crate wifiqr;
 extern crate rpassword;
-
-use std::{fs,io};
+extern crate wifiqr;
+use std::fs;
+use std::io;
 use std::io::Write;
 
 use clap::{App, Arg, ArgGroup};
@@ -132,16 +132,23 @@ fn main() {
 
     if options.is_present("ask") {
         password = prompt_password_stdout(
-            format!("Enter password for network `{}` (will not echo to screen): ", 
-                    options.value_of("ssid").unwrap())
-            .as_str()).unwrap();
+            format!(
+                "Enter password for network `{}` (will not echo to screen): ",
+                options.value_of("ssid").unwrap()
+            )
+            .as_str(),
+        )
+        .unwrap();
     } else if options.is_present("ask-echo") {
-        print!("Enter password for network `{}` (will echo to screen): ",
+        print!(
+            "Enter password for network `{}` (will echo to screen): ",
             options.value_of("ssid").unwrap()
         );
 
         io::stdout().flush().unwrap();
-        io::stdin().read_line(&mut password).expect("Failed to read password");
+        io::stdin()
+            .read_line(&mut password)
+            .expect("Failed to read password");
         password = password.trim().to_string();
     } else {
         password = options.value_of("password").unwrap().to_string();
@@ -156,23 +163,33 @@ fn main() {
     );
 
     if options.is_present("debug") {
-        println!("SSID: {} | PASSWORD: {} | ENCRYPTION: {} | HIDDEN: {} | QUOTE SSID/PASSWORD: {}", 
-                options.value_of("ssid").unwrap(), 
-                password, 
-                options.value_of("encryption").unwrap(),
-                options.is_present("hidden"),
-                options.is_present("quote"),
+        println!(
+            "SSID: {} | PASSWORD: {} | ENCRYPTION: {} | HIDDEN: {} | QUOTE SSID/PASSWORD: {}",
+            options.value_of("ssid").unwrap(),
+            password,
+            options.value_of("encryption").unwrap(),
+            options.is_present("hidden"),
+            options.is_present("quote"),
         );
 
         println!("Wifi string: {:?}", config.format().unwrap());
     }
 
-    let encoding = wifiqr::code::encode(&config).expect("There was a problem generating the QR code");
+    let encoding =
+        wifiqr::code::encode(&config).expect("There was a problem generating the QR code");
 
     // Note: avoid turbofish/generic on parse() through upfront declaration
     let scale: i32 = options.value_of("scale").unwrap_or("10").parse().unwrap();
-    let quiet_zone: i32 = options.value_of("quiet_zone").unwrap_or("10").parse().unwrap();
-    let image_file: String = options.value_of("image_file").unwrap_or("qr.png").parse().unwrap();
+    let quiet_zone: i32 = options
+        .value_of("quiet_zone")
+        .unwrap_or("10")
+        .parse()
+        .unwrap();
+    let image_file: String = options
+        .value_of("image_file")
+        .unwrap_or("qr.png")
+        .parse()
+        .unwrap();
 
     if options.is_present("svg_file") {
         println!("Generating QR code ..");

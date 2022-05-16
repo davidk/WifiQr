@@ -4,6 +4,7 @@ extern crate wifiqr;
 use std::fs;
 use std::io;
 use std::io::Write;
+use std::path::Path;
 
 use clap::{App, Arg, ArgGroup};
 use rpassword::prompt_password_stdout;
@@ -128,6 +129,37 @@ fn main() {
         )
         .get_matches();
 
+    // Note: avoid turbofish/generic on parse() through upfront declaration
+    let scale: i32 = options.value_of("scale").unwrap_or("10").parse().unwrap();
+    let quiet_zone: i32 = options
+        .value_of("quiet_zone")
+        .unwrap_or("10")
+        .parse()
+        .unwrap();
+    let image_file: String = options
+        .value_of("image_file")
+        .unwrap_or("")
+        .parse()
+        .unwrap();
+
+    // Validate that image_file extension supplied is compatible with upstream library export formats
+    match Path::new(&image_file).extension() {
+        None => {
+            println!("Error: No extension found for image file. Try --imagefile [ qr.jpeg | qr.png ] instead.");
+            return;
+        }
+        Some(p) => {
+            let ext: &str = p.to_str().unwrap();
+            match ext {
+                "png" | "jpeg" | "jpg" => {}
+                _ => {
+                    println!("Unrecognized file extension: {}. Try --imagefile [ qr.png | qr.jpeg | qr.jpg ] instead.", ext);
+                    return;
+                }
+            }
+        }
+    };
+
     let mut password = String::new();
 
     if options.is_present("ask") {
@@ -175,21 +207,13 @@ fn main() {
         println!("Wifi string: {:?}", config.format().unwrap());
     }
 
-    let encoding =
-        wifiqr::code::encode(&config).expect("There was a problem generating the QR code");
-
-    // Note: avoid turbofish/generic on parse() through upfront declaration
-    let scale: i32 = options.value_of("scale").unwrap_or("10").parse().unwrap();
-    let quiet_zone: i32 = options
-        .value_of("quiet_zone")
-        .unwrap_or("10")
-        .parse()
-        .unwrap();
-    let image_file: String = options
-        .value_of("image_file")
-        .unwrap_or("qr.png")
-        .parse()
-        .unwrap();
+    let encoding = match wifiqr::code::encode(&config) {
+        Ok(e) => e,
+        Err(e) => {
+            println!("There was a problem generating the QR code.\n{}", e);
+            return;
+        }
+    };
 
     if options.is_present("svg_file") {
         println!("Generating QR code ..");
@@ -202,13 +226,13 @@ fn main() {
     } else if options.is_present("image_file") {
         println!("Generating QR code ..");
 
-        println!("Scale {} + Quiet Zone: {} ", quiet_zone, scale);
+        println!("Parameters: scale {} + quiet zone: {} ", scale, quiet_zone);
         println!("Writing out to file ..");
 
         let image = wifiqr::code::make_image(&encoding, scale, quiet_zone);
         match wifiqr::code::save_image(&image, image_file.to_string()) {
             Ok(_) => {
-                println!("The QR code has been saved to {}", image_file);
+                println!("QR code has been saved to file {}", image_file);
             }
             Err(e) => {
                 println!("Error: {:?}", e);

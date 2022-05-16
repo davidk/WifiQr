@@ -66,13 +66,13 @@ pub mod methods {
     /// * image: ImageBuffer<>
     ///
     /// * save_file: file path to save the image into. ImageBuffer only supports jpeg and png extensions.
-    pub fn save_image(image: &ImageBuffer<LumaA<u8>, Vec<u8>>, save_file: String) {
-        let _ = match image.save(save_file) {
-            Ok(f) => f,
-            Err(err) => panic!(
-                "Was an unsupported file extension supplied?. Try .jpeg or .png?\r\nError: {:#?}",
-                err
-            ),
+    pub fn save_image(
+        image: &ImageBuffer<LumaA<u8>, Vec<u8>>,
+        save_file: String,
+    ) -> Result<(), image::ImageError> {
+        match image.save(save_file) {
+            Ok(()) => return Ok(()),
+            Err(err) => return Err(err),
         };
     }
 

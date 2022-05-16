@@ -255,9 +255,10 @@ mod tests {
 
 /// Wifi QR code generator
 pub mod code {
+    use std::error;
 
     use image::{ImageBuffer, LumaA};
-    use qrcodegen::{DataTooLong, Mask, QrCode, QrCodeEcc, QrSegment};
+    use qrcodegen::{Mask, QrCode, QrCodeEcc, QrSegment};
 
     use crate::exporters::methods::{
         make_image as make_image_export, save_image as save_image_export,
@@ -348,8 +349,7 @@ pub mod code {
             if self.pass.is_empty() || self.pass == "" {
                 // Error condition: Password is empty, and the T (encr) type is not "nopass" / not empty
                 if self.encr != "nopass" && !self.encr.is_empty() {
-                    return Err("The encryption method requested requires a password. 
-                        If you would like no password, set '--encr nopass'");
+                    return Err("The encryption method requested requires a password. If you would like no password, set '--encr nopass'");
                 }
 
                 if self.encr.is_empty() || self.encr == "nopass" {
@@ -400,9 +400,16 @@ pub mod code {
     }
 
     /// generates a qrcode from a Credentials configuration
-    pub fn encode(config: &Credentials) -> Result<QrCode, DataTooLong> {
-        let q = QrCode::encode_text(&config.format().unwrap(), QrCodeEcc::High)?;
-        Ok(q)
+    pub fn encode(config: &Credentials) -> Result<QrCode, Box<dyn error::Error>> {
+        let c = match config.format() {
+            Ok(c) => c,
+            Err(e) => return Err(e.into()),
+        };
+
+        match QrCode::encode_text(&c, QrCodeEcc::High) {
+            Ok(qr) => return Ok(qr),
+            Err(e) => return Err(e.into()),
+        };
     }
 
     /// manual_encode isn't intended for use externally, but exists to compare between the
@@ -498,7 +505,10 @@ pub mod code {
     /// * image: ImageBuffer<>
     ///
     /// * save_file: file path to save the image into
-    pub fn save_image(image: &ImageBuffer<LumaA<u8>, Vec<u8>>, save_file: String) {
-        save_image_export(image, save_file);
+    pub fn save_image(
+        image: &ImageBuffer<LumaA<u8>, Vec<u8>>,
+        save_file: String,
+    ) -> Result<(), image::ImageError> {
+        return save_image_export(image, save_file);
     }
 }

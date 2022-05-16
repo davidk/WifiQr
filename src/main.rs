@@ -227,7 +227,6 @@ fn main() {
         println!("Generating QR code ..");
 
         println!("Parameters: scale {} + quiet zone: {} ", scale, quiet_zone);
-        println!("Writing out to file ..");
 
         let image = wifiqr::code::make_image(&encoding, scale, quiet_zone);
         match wifiqr::code::save_image(&image, image_file.to_string()) {

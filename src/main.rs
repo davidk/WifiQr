@@ -206,9 +206,16 @@ fn main() {
         println!("Writing out to file ..");
 
         let image = wifiqr::code::make_image(&encoding, scale, quiet_zone);
-        wifiqr::code::save_image(&image, image_file.to_string());
-
-        println!("The QR code has been saved to {}", image_file);
+        match wifiqr::code::save_image(&image, image_file.to_string()) {
+            Ok(_) => {
+                println!("The QR code has been saved to {}", image_file);
+            }
+            Err(e) => {
+                println!("Error: {:?}", e);
+                println!("Unable to write QR image to file in requested format. Supported extensions are .jpeg and .png. Try --imagefile qr.jpeg or --imagefile qr.png");
+                fs::remove_file(image_file.to_string()).unwrap();
+            }
+        };
     } else if options.is_present("svg") {
         println!("{}", wifiqr::code::make_svg(&encoding));
     } else if options.is_present("console") {

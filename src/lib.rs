@@ -282,13 +282,13 @@ pub mod code {
             mut _hidden: bool,
             mut _quote: bool,
         ) -> Self {
-            return Credentials {
+            Credentials {
                 ssid: _ssid.unwrap().to_string(),
                 encr: _encr.unwrap().to_string(),
                 pass: _password.unwrap().to_string(),
                 hidden: _hidden,
                 quote: _quote,
-            };
+            }
         }
 
         /// escape characters as in:
@@ -300,17 +300,17 @@ pub mod code {
 
             let mut filtered = field
                 .to_string()
-                .replace(r#"\"#, r#"\\"#)
+                .replace(r#"'\'"#, r#"\\"#)
                 .replace(r#"""#, r#"\""#)
-                .replace(r#";"#, r#"\;"#)
-                .replace(r#":"#, r#"\:"#);
+                .replace(r#"';'"#, r#"\;"#)
+                .replace(r#"':'"#, r#"\:"#);
 
             if (filtered == self.ssid || filtered == self.pass) && self.quote {
                 // println!("Adding quotes to SSID/Password -- quote is not set");
-                filtered = format!("\"{}\"", field.to_string());
+                filtered = format!("\"{}\"", field);
             }
 
-            return filtered;
+            filtered
         }
 
         /// the encryption field in the Wifi QR code fails on iOS devices if it is
@@ -320,7 +320,7 @@ pub mod code {
             if field != "nopass" && !self.encr.is_empty() {
                 return field.to_string().to_uppercase();
             }
-            return field.to_string();
+            field.to_string()
         }
 
         /// Call the wifi_auth! macro to generate a qr-string and/or return any errors that
@@ -335,21 +335,18 @@ pub mod code {
             // unrecoverable errors:
             // * ssid has no password, but sets a T type
             // * sets a password, but sets T type to nopass
-
-            if self.encr == "nopass" || self.encr.is_empty() {
-                if !self.pass.is_empty() {
-                    return Err(
-                        "With nopass as the encryption type (or unset encryption type), 
-                        the password field should be empty. (Encryption should probably be set 
-                        to something like wpa2)",
-                    );
-                }
+            if (self.encr == "nopass" || self.encr.is_empty()) && !self.pass.is_empty() {
+                return Err(
+                    "With nopass as the encryption type (or unset encryption type), 
+                    the password field should be empty. (Encryption should probably be set 
+                    to something like wpa2)",
+                );
             }
 
-            if self.pass.is_empty() || self.pass == "" {
+            if self.pass.is_empty() {
                 // Error condition: Password is empty, and the T (encr) type is not "nopass" / not empty
                 if self.encr != "nopass" && !self.encr.is_empty() {
-                    return Err("The encryption method requested requires a password. If you would like no password, set '--encr nopass'");
+                    return Err("The encryption method requested requires a password.");
                 }
 
                 if self.encr.is_empty() || self.encr == "nopass" {
@@ -359,7 +356,7 @@ pub mod code {
                             self.filter_credentials(&self.ssid),
                             &self.hidden,
                         ));
-                    } else if self.pass == "" {
+                    } else if self.pass.is_empty() {
                         return Ok(format!(
                             wifi_auth!(nopass),
                             self.filter_credentials(&self.ssid),
@@ -396,7 +393,7 @@ pub mod code {
         _hidden: bool,
         _quote: bool,
     ) -> Credentials {
-        return self::Credentials::new(_ssid, _password, _encr, _hidden, _quote);
+        self::Credentials::new(_ssid, _password, _encr, _hidden, _quote)
     }
 
     /// generates a qrcode from a Credentials configuration
@@ -407,9 +404,9 @@ pub mod code {
         };
 
         match QrCode::encode_text(&c, QrCodeEcc::High) {
-            Ok(qr) => return Ok(qr),
-            Err(e) => return Err(e.into()),
-        };
+            Ok(qr) => Ok(qr),
+            Err(e) => Err(e.into()),
+        }
     }
 
     /// manual_encode isn't intended for use externally, but exists to compare between the
@@ -424,7 +421,7 @@ pub mod code {
     ) -> QrCode {
         let segs: Vec<QrSegment> = QrSegment::make_segments(&config.format().unwrap());
 
-        return QrCode::encode_segments_advanced(
+        QrCode::encode_segments_advanced(
             &segs,
             error_level,
             lowest_version,
@@ -432,7 +429,7 @@ pub mod code {
             mask_level,
             true,
         )
-        .unwrap();
+        .unwrap()
     }
 
     /// generates a wifi qr code that is printed to a terminal/console for quick scanning
@@ -489,7 +486,7 @@ pub mod code {
         scale: i32,
         border_size: i32,
     ) -> ImageBuffer<LumaA<u8>, Vec<u8>> {
-        return make_image_export(qrcode, scale, border_size);
+        make_image_export(qrcode, scale, border_size)
     }
 
     /// generates an svg string from a QrCode (output from the QR library)
@@ -497,7 +494,7 @@ pub mod code {
     /// * qrcode: &QrCode
     ///
     pub fn make_svg(qrcode: &QrCode) -> String {
-        return to_svg_string_export(&qrcode, 4);
+        to_svg_string_export(qrcode, 4)
     }
 
     /// saves an image to a file
@@ -509,6 +506,6 @@ pub mod code {
         image: &ImageBuffer<LumaA<u8>, Vec<u8>>,
         save_file: String,
     ) -> Result<(), image::ImageError> {
-        return save_image_export(image, save_file);
+        save_image_export(image, save_file)
     }
 }

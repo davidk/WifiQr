@@ -58,7 +58,7 @@ pub mod methods {
             }
         }
 
-        return image;
+        image
     }
 
     /// saves an image to a file
@@ -71,9 +71,9 @@ pub mod methods {
         save_file: String,
     ) -> Result<(), image::ImageError> {
         match image.save(save_file) {
-            Ok(()) => return Ok(()),
-            Err(err) => return Err(err),
-        };
+            Ok(()) => Ok(()),
+            Err(err) => Err(err),
+        }
     }
 
     /// returns a QR code that can be interpreted by an SVG reader

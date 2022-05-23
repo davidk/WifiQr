@@ -236,7 +236,7 @@ fn main() {
             Err(e) => {
                 println!("Error: {:?}", e);
                 println!("Unable to write QR image to file in requested format. Supported extensions are .jpeg and .png. Try --imagefile qr.jpeg or --imagefile qr.png");
-                fs::remove_file(image_file.to_string()).unwrap();
+                fs::remove_file(image_file).unwrap();
             }
         };
     } else if options.is_present("svg") {

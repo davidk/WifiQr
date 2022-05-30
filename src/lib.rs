@@ -326,7 +326,7 @@ pub mod code {
         /// Call the wifi_auth! macro to generate a qr-string and/or return any errors that
         /// need to be raised to the caller. Note: format does not enforce an encryption type, it is
         /// up to the end user to use the right value if one is provided.
-        pub fn format(&self) -> Result<String, &'static str> {
+        pub fn format(&self) -> Result<String, FormatError> {
             // empty password ->
             //  * is password empty and ssid hidden? => set T:nopass and H:
             //  * is encryption type empty? => set nopass
@@ -336,17 +336,17 @@ pub mod code {
             // * ssid has no password, but sets a T type
             // * sets a password, but sets T type to nopass
             if (self.encr == "nopass" || self.encr.is_empty()) && !self.pass.is_empty() {
-                return Err(
+                return Err(FormatError(
                     "With nopass as the encryption type (or unset encryption type), 
                     the password field should be empty. (Encryption should probably be set 
-                    to something like wpa2)",
-                );
+                    to something like wpa2)".to_string(),
+                ));
             }
 
             if self.pass.is_empty() {
                 // Error condition: Password is empty, and the T (encr) type is not "nopass" / not empty
                 if self.encr != "nopass" && !self.encr.is_empty() {
-                    return Err("The encryption method requested requires a password.");
+                    return Err(FormatError("The encryption method requested requires a password.".to_string()));
                 }
 
                 if self.encr.is_empty() || self.encr == "nopass" {
@@ -508,4 +508,20 @@ pub mod code {
     ) -> Result<(), image::ImageError> {
         save_image_export(image, save_file)
     }
+
+#[derive(Debug, Clone)]
+pub struct FormatError(String);
+
+impl std::error::Error for FormatError {
+	fn description(&self) -> &str {
+		&self.0
+	}
+}
+
+impl std::fmt::Display for FormatError {
+	fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+		f.write_str(&self.0)
+	}
+}
+
 }

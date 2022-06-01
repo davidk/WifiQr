@@ -142,24 +142,6 @@ fn main() {
         .parse()
         .unwrap();
 
-    // Validate that image_file extension supplied is compatible with upstream library export formats
-    match Path::new(&image_file).extension() {
-        None => {
-            println!("Error: No extension found for image file. Try --imagefile [ qr.jpeg | qr.png ] instead.");
-            return;
-        }
-        Some(p) => {
-            let ext: &str = p.to_str().unwrap();
-            match ext {
-                "png" | "jpeg" | "jpg" => {}
-                _ => {
-                    println!("Unrecognized file extension: {}. Try --imagefile [ qr.png | qr.jpeg | qr.jpg ] instead.", ext);
-                    return;
-                }
-            }
-        }
-    };
-
     let mut password = String::new();
 
     if options.is_present("ask") {
@@ -224,6 +206,25 @@ fn main() {
 
         fs::write(file_name, svg_data).expect("Unable to write file");
     } else if options.is_present("image_file") {
+
+        // Validate that image_file extension supplied is compatible with upstream library export formats
+        match Path::new(&image_file).extension() {
+            None => {
+                println!("Error: No extension found for image file. Try --imagefile [ qr.jpeg | qr.png ] instead.");
+                return;
+            }
+            Some(p) => {
+                let ext: &str = p.to_str().unwrap();
+                match ext {
+                    "png" | "jpeg" | "jpg" => {}
+                    _ => {
+                        println!("Unrecognized file extension: {}. Try --imagefile [ qr.png | qr.jpeg | qr.jpg ] instead.", ext);
+                        return;
+                    }
+                }
+            }
+        };
+
         println!("Generating QR code ..");
 
         println!("Parameters: scale {} + quiet zone: {} ", scale, quiet_zone);

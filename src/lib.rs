@@ -300,9 +300,9 @@ pub mod code {
 
             let mut filtered = field
                 .to_string()
-                .replace(r#"\"#, r#"\\"#)
+                .replace('\\', r#"\\"#)
                 .replace('"', r#"\""#)
-                .replace(r#";"#, r#"\;"#)
+                .replace(';', r#"\;"#)
                 .replace(r#"':'"#, r#"\:"#);
 
             if (filtered == self.ssid || filtered == self.pass) && self.quote {

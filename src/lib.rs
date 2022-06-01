@@ -300,9 +300,9 @@ pub mod code {
 
             let mut filtered = field
                 .to_string()
-                .replace(r#"'\'"#, r#"\\"#)
+                .replace(r#"\"#, r#"\\"#)
                 .replace('"', r#"\""#)
-                .replace(r#"';'"#, r#"\;"#)
+                .replace(r#";"#, r#"\;"#)
                 .replace(r#"':'"#, r#"\:"#);
 
             if (filtered == self.ssid || filtered == self.pass) && self.quote {
@@ -509,19 +509,23 @@ pub mod code {
         save_image_export(image, save_file)
     }
 
-#[derive(Debug, Clone)]
-pub struct FormatError(String);
+    /// this error is returned when a potentally invalid combination of choices are made in the process
+    /// of building a wifi connection string to embed as a QR code.
+    ///
+    /// a recommendation is returned to the caller as a string to provide corrective action
+    #[derive(Debug, Clone)]
+    pub struct FormatError(String);
 
-impl std::error::Error for FormatError {
-	fn description(&self) -> &str {
-		&self.0
-	}
-}
+    impl std::error::Error for FormatError {
+        fn description(&self) -> &str {
+            &self.0
+        }
+    }
 
-impl std::fmt::Display for FormatError {
-	fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-		f.write_str(&self.0)
-	}
-}
+    impl std::fmt::Display for FormatError {
+        fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+            f.write_str(&self.0)
+        }
+    }
 
 }
